@@ -4,6 +4,7 @@ import logger from "koa-logger";
 import json from "koa-json";
 
 import { router as articles } from "./routers/articles";
+import { router as dummy} from "./routers/special"
 
 const app: Koa = new Koa();
 const router: Router = new Router();
@@ -21,6 +22,7 @@ app.use(logger());
 // app.use(bodyParser());
 //app.use(router.routes()).use(router.allowedMethods());
 app.use( articles.routes());
+app.use( dummy.routes());
 
 app.listen(10888, () => {
     console.log("Koa Started");
