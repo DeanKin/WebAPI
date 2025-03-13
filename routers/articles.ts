@@ -1,149 +1,116 @@
-import Router, {RouterContext} from "koa-router";
-import bodyParser from "koa-bodyparser";
-import * as model from '../models/articles';
-import { basicAuth } from "../controllers/auth";
-
+import Router, {RouterContext} from 'koa-router';
+import bodyParser from 'koa-bodyparser';
+import * as articlesmodel from '../models/articles';
+import { basicAuth } from '../controllers/auth';
+import {validateArticle} from '../controllers/validation';
 
 const router = new Router({prefix: '/api/v1/articles'});
-// const articles = [ 
-//     {title:'hello article', fullText:'some text here to fill the body'}, 
-//     {title:'another article', fullText:'again here is some text here to fill'}, 
-//     {title:'coventry university ', fullText:'some news about coventry university'}, 
-//     {title:'smart campus', fullText:'smart campus is coming to IVE'} 
-// ];
-// interface Article {
-//     title: string,
-//     fullText: string
-// }
 
-//define the handler function
-const getAll = async (ctx: RouterContext, next: any)=>{
-    let articles = await model.getAll();
-    if (articles.length){
+interface Article {
+    title: string,
+    alltext: string
+}
+
+const getAll = async (ctx:RouterContext, next: any) => {
+    let articles = await articlesmodel.getAll();
+    if(articles.length){
         ctx.body = articles;
-    }else{
-        ctx.body ={}
+    } else {
+        ctx.body = {}
     }
-
     await next();
 }
 
-//Get by ID
-const getById = async (ctx: RouterContext, next: any)=>{
-    // let id = +ctx.params.id
-    // if ((id < articles.length+1) && (id>0)){
-    //     ctx.body = articles[id-1];
-    // } else {
-    //     ctx.state = 404;
-    // }
+const getById = async (ctx:RouterContext, next: any) => {
     let id = ctx.params.id;
-    let article = await model.getById(id);
-    if (article.length) {
-        ctx.body = article[0];
+    let article: any[] = await articlesmodel.getById(id);
+    if(article.length){
+        // Lab 8 updated: Only delegated user can read the articles: 
+        if(ctx.state.user.id == article[0].authorid ) {
+            ctx.body = article[0];
+        } else {
+            ctx.status = 401;
+            ctx.body = { msg: 'You are not authorized'};
+        }
+        // Update completed
     } else {
         ctx.status = 404;
     }
-
     await next();
 }
-
-//create the new Articles
-const createArticles = async (ctx: RouterContext, next: any)=>{
-    // let article: any = ctx.request.body;
-    // let newArticles = {title: article.title, fullText: article.fullText};
-    // articles.push(newArticles);
-    // ctx.status = 201;
-    // ctx.body = newArticles;
-    const body = ctx.request.body;
-    let result = await model.add(body);
-    if (result.status == 201) {
-        ctx.status = 201;
-        ctx.body = body;
+const createArticle = async (ctx:RouterContext, next: any) => {
+    const body = <Article> ctx.request.body;
+    // Lab 8 updated: Only delegated user can add the articles
+    // Need update the body with the authorid (id) 
+    // Note: JSON does not include the authorid
+    if(ctx.state.user.id) {
+        Object.defineProperty(body, "authorid", { value: ctx.state.user.id, writable: false, enumerable: true, configurable: true });
+        let result = await articlesmodel.add(body);
+        if(result.status == 201){
+            ctx.status = 201;
+            ctx.body = body;
+        } else {
+            ctx.status = 500;
+            ctx.body = { err: "Insert data failed"};
+        }
     } else {
-        ctx.status = 500;
-        ctx.body = {err: "insert data failed"};
+        ctx.status = 401;
+        ctx.body = { msg: 'You are not authorized'};
     }
     await next();
 }
-
-const updateArticles = async (ctx: RouterContext, next: any)=>{
-    // let id = +ctx.params.id;
-    // let article = <Article> ctx.request.body;
-    
-    // if ((id < articles.length + 1) && (id > 0)) {
-              
-    //     if (article.title && article.fullText) {
-    //         articles[id - 1] = { title: article.title, fullText: article.fullText };
-    //         ctx.body = articles[id - 1];
-    //     } else {
-    //         ctx.status = 400;
-    //         ctx.body = { error: 'Title and fullText are required' };
-    //     }
-    // } else {
-    //     ctx.status = 404;
-    //     ctx.body = { error: "Article not found" };
-    // }
-    let id = ctx.params.id;
-    const body = ctx.request.body;
-
-    let existingArticle = await model.getById(id);
-    
-    if (existingArticle.length) {
-        // Update the article
-        let result = await model.update(id, body);
-        
-        if (result.status === 200) {
+const updateArticle = async (ctx:RouterContext, next: any) => {
+    // Lab 8 updated: Only delegated user can update the articles: 
+    // No action if the user is not correct
+    let article: any[] = await articlesmodel.getById(ctx.params.id);
+    if(article.length){        
+        if(ctx.state.user.id == article[0].authorid ) {
+            const body = <Article> ctx.request.body;
+            let result = await articlesmodel.update(parseInt(ctx.params.id), body);
+            switch(result.status){
+                case 201:
+                    ctx.status = 201;
+                    ctx.body = { description: 'Data update succesfully'};
+                    break;
+                case 404:
+                    ctx.status = 404;
+                    ctx.body = { description: 'ID not found and no data updated'};
+                    break;
+                default:
+                    ctx.status = 500;
+                    ctx.body = { err: "Update data failed"};
+                    break;
+            }
+        } 
+    } else {
+        ctx.status = 404;
+    }
+    await next();
+}
+const deleteArticle = async (ctx:RouterContext, next: any) => {
+    // Lab 8 updated: Only delegated user can update the articles: 
+    // No action if the user is not correct
+    let article: any[] = await articlesmodel.getById(ctx.params.id);
+    if(article.length){ 
+        if(ctx.state.user.id == article[0].authorid ) {
+            await articlesmodel.deleteArticle(parseInt(ctx.params.id));
             ctx.status = 200;
-            ctx.body = { message: "Article updated successfully", article: body };
+            ctx.body = {status: 'operation successfully'}
         } else {
-            ctx.status = 500;
-            ctx.body = { err: "Update failed" };
+            ctx.status = 401;
+            ctx.body = { msg: 'You are not authorized'};
         }
     } else {
         ctx.status = 404;
-        ctx.body = { err: "Article not found" };
+        ctx.body = { msg: 'Article not found'};
     }
     await next();
 }
-
-const deleteArticles = async (ctx: RouterContext, next: any)=>{
-    // let id = +ctx.params.id;
-    // if ((id < articles.length + 1) && (id > 0)) {
-    //     articles.splice(id - 1, 1);
-    //     ctx.status = 204; // No content
-    //     ctx.body = {
-    //         message: "Articles deleted"
-    //     }
-    // } else {
-    //     ctx.status = 404;
-    //     ctx.body = { error: "Article not found" };
-    // }
-    let id = ctx.params.id;
-    let existingArticle = await model.getById(id);
-    
-    if (existingArticle.length) {
-        // Delete the article
-        let result = await model.remove(id);
-        
-        if (result.status === 200) {
-            ctx.status = 200;
-            ctx.body = { message: "Article deleted successfully" };
-        } else {
-            ctx.status = 500;
-            ctx.body = { err: "Delete failed" };
-        }
-    } else {
-        ctx.status = 404;
-        ctx.body = { err: "Article not found" };
-    }
-    await next();
-}
-
 
 router.get('/', getAll);
-router.get('/:id([0-9]{1,})',basicAuth, getById);
-router.post('/',basicAuth, bodyParser(), createArticles);
-router.put('/:id([0-9]{1,})',basicAuth,bodyParser(), updateArticles);
-router.del('/:id([0-9]{1,})',basicAuth, deleteArticles);
+router.get('/:id([0-9]{1,})', basicAuth, getById);
+router.post('/', basicAuth, bodyParser(), validateArticle, createArticle);
+router.put('/:id([0-9]{1,})', basicAuth, bodyParser(), validateArticle, updateArticle);
+router.delete('/:id([0-9]{1,})', basicAuth, deleteArticle);
 
 export { router };

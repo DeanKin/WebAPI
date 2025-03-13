@@ -1,29 +1,33 @@
-import Koa from "koa";
-import Router, {RouterContext} from "koa-router";
-import logger from "koa-logger";
-import json from "koa-json";
+import Koa from 'koa';
+//import Router, { RouterContext } from 'koa-router';
+import logger from 'koa-logger';
+import json from 'koa-json';
+import serve from 'koa-static';
 
-import { router as articles } from "./routers/articles";
-import { router as dummy} from "./routers/special"
+import { router as article } from './routers/articles';
+import { router as dummy } from './routers/special';
+
 
 const app: Koa = new Koa();
-const router: Router = new Router();
+// const router: Router = new Router();
 
 // const welcomeAPI = async (ctx: RouterContext, next: any) => {
 //     ctx.body = {
-//         message: "Welcome to the blog API!"
-//     }
+//         message: "Welcome to THE Blog API!"
+//     };
 //     await next();
 // }
 
-//router.get('/api/v1', welcomeAPI);
+// router.get('/api/v1', welcomeAPI);
+
+app.use(serve('./')); //Documentation
 app.use(json());
 app.use(logger());
-// app.use(bodyParser());
 //app.use(router.routes()).use(router.allowedMethods());
-app.use( articles.routes());
-app.use( dummy.routes());
+app.use(article.routes());
+app.use(dummy.routes());
 
-app.listen(10888, () => {
-    console.log("Koa Started");
-})
+
+app.listen(10888, ()=>{
+    console.log('Blog API Started');
+});
