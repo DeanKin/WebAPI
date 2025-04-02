@@ -1,47 +1,41 @@
 openapi: 3.0.0
 info:
   version: 1.0.0
-  title: Back End Demonstration API
-  description: A simple blog API.
+  title: Backend Documentation API
+  description: A simple blog API
   contact:
-    name: Dean Leung
-    email: 247029293@stu.vtc.edu.hk
+    name: WONG Hang-chit
+    contact: hcwong@vtc.edu.hk
   license:
     name: Apache 2.0
-    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+    url: 'https://www.apache.org/license/LICENSE-2.0.html'
 servers:
-  - url: 'https://localhost:10888/api/v1'
-    description: Development server version 1
+  - url: 'http://localhost:10888/api/v1'
+    description: Development Server
 tags:
   - name: Users
-    description: API endpoints for user management.
+    description: API enpoints for user management
   - name: Articles
-    description: Access and perform CRUD operations on blog entries.
+    description: Access and perform CRUD operations on blog entries
 paths:
-  /articles/:
+  /articles:
     get:
-    tags:
-      - Articles
-    description:
-      Get all article.
+      tags:
+        - Articles
+      description:
+        Get ALL articles from database
     post:
       tags:
         - Articles
       description:
-        Create an article.
-      requestBody:
+        Create an article
+      requestBody: 
         description: All new article data.
         required: true
         content:
           application/json:
             schema:
               $ref: ./article.json#/definitions/article
-      responses:
-        '200':
-          description: Create confirmation and link to record.
-        '404':
-          description: Article was not created in the DB.
-    
   /articles/{id}:
     parameters:
       - in: path
@@ -49,34 +43,34 @@ paths:
         schema:
           type: integer
         required: true
-        description: Numeric id of the article (Not less than 0)
+        description: Numberic id of the articles (not less than 0)
     get:
-    tags:
-      - Articles
-    description:
-      Get article by id.
-    responses:
-      '200':
-        description: View of an article record.
-      '404':
-        description: Article was not found in the DB.
+      tags:
+        - Articles
+      description:
+        Get article by id.
+      responses:
+        '200':
+          description: View of an article record
+        '404':
+          description: Article was not found in the DB
     put:
       tags:
         - Articles
       description:
-        Update article by ID.
+        Update article by ID
       responses:
         '200':
-          description: Update confirmation and link to record.
+          description: Update of an article record with delegated ID
         '404':
-          description: Article was not found in the DB.
+          description: Article was not found in the DB
     delete:
       tags:
         - Articles
-      description: 
-        Delete article by ID.
+      description:
+        Delete article by ID
       responses:
         '200':
-          description: Delete confirmation.
+          description: Delete delegated ID article record
         '404':
-          description: User was not found in the DB.
+          description: Article was not found in the DB

@@ -3,10 +3,10 @@ import Koa from 'koa';
 import logger from 'koa-logger';
 import json from 'koa-json';
 import serve from 'koa-static';
+import cors from '@koa/cors';
 
 import { router as article } from './routers/articles';
 import { router as dummy } from './routers/special';
-
 
 const app: Koa = new Koa();
 // const router: Router = new Router();
@@ -20,13 +20,14 @@ const app: Koa = new Koa();
 
 // router.get('/api/v1', welcomeAPI);
 
-app.use(serve('./')); //Documentation
+app.use(cors());
+app.use(serve('./'));
 app.use(json());
 app.use(logger());
 //app.use(router.routes()).use(router.allowedMethods());
 app.use(article.routes());
 app.use(dummy.routes());
-
+ // documentation
 
 app.listen(10888, ()=>{
     console.log('Blog API Started');

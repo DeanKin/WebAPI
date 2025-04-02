@@ -1,35 +1,35 @@
-export const article= {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "id": "/article",
+export const article = {
+    "$schema":"http://json-schema.org/draft-04/schema#",
+    "id":"/articles",
     "title": "Article",
     "description": "An article in the blog",
     "type": "object",
     "properties": {
         "title": {
-            "description": "Main title of the blog article",
+            "description": "Main Title of the blog article",
             "type": "string"
-        },
+        }, 
         "allText": {
-            "description": "Body text of the blog article",
+            "description": "Article details",
             "type": "string"
-        },
+        }, 
         "summary": {
-            "description": "Optional short text summary of article",
+            "description": "Summary of the articles",
             "type": "string"
         },
-        "imageURL": {
-            "description": "URL for main image to show in article",
+        "imageurl": {
+            "description": "URL of the image",
             "type": "uri"
         },
         "published": {
             "description": "Is the article published or not",
             "type": "boolean"
         },
-        "authorID": {
-            "description": "User ID of the article author",
+        "authorid": {
+            "description": "Author ID",
             "type": "integer",
             "minimum": 0
-        },
+        }
     },
-    "required": ["title", "allText", "authorID"] //must be need
+    "required":["title", "allText", "authorid"]
 }

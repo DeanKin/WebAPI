@@ -2,7 +2,7 @@ import Router, {RouterContext} from 'koa-router';
 import bodyParser from 'koa-bodyparser';
 import * as articlesmodel from '../models/articles';
 import { basicAuth } from '../controllers/auth';
-import {validateArticle} from '../controllers/validation';
+import { validateArticle } from '../controllers/validation';
 
 const router = new Router({prefix: '/api/v1/articles'});
 
